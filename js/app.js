@@ -1,46 +1,102 @@
-// Enemies our player must avoid
-var Enemy = function() {
-    // Variables applied to each of our instances go here,
-    // we've provided one for you to get started
-
-    // The image/sprite for our enemies, this uses
-    // a helper we've provided to easily load images
-    this.sprite = 'images/enemy-bug.png';
-};
-
-// Update the enemy's position, required method for game
-// Parameter: dt, a time delta between ticks
-Enemy.prototype.update = function(dt) {
-    // You should multiply any movement by the dt parameter
-    // which will ensure the game runs at the same speed for
-    // all computers.
-};
+class Core {
+  constructor(x, y, speed) {
+    (this.x = x), (this.y = y), (this.speed = speed);
+  }
+}
 
 // Draw the enemy on the screen, required method for game
-Enemy.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+Core.prototype.render = function() {
+  ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
-// Now write your own player class
-// This class requires an update(), render() and
-// a handleInput() method.
+class Enemy extends Core {
+  constructor(x, y, speed) {
+    super(x, y, speed);
+    this.sprite = "images/enemy-bug.png";
+  }
+}
 
+// Update the enemy's position, required method for game
+Enemy.prototype.update = function(dt) {
+  if (this.x <= 665) {
+    this.x += this.speed;
+    //start enemy position and generate new number
+  } else {
+    this.x = 0;
+    this.speed = generateRandomNum();
+  }
 
-// Now instantiate your objects.
-// Place all enemy objects in an array called allEnemies
-// Place the player object in a variable called player
+  //colision
+  if (
+    (player.x - this.x < 50 && player.x - this.x >= 2 && player.y === this.y) ||
+    (this.x - player.x < 50 && this.x - player.x >= 2 && player.y === this.y)
+  ) {
+    player.x = player.initialX;
+    player.y = player.initialY;
+  }
+};
 
+class Player extends Core {
+  constructor(x, y, speed) {
+    super(x, y, speed);
+    this.initialX = 203;
+    this.initialY = 380;
+    this.speed = 0;
+    this.sprite = "images/char-boy.png";
+  }
+}
 
+Player.prototype.update = function(dt) {};
 
-// This listens for key presses and sends the keys to your
-// Player.handleInput() method. You don't need to modify this.
-document.addEventListener('keyup', function(e) {
-    var allowedKeys = {
-        37: 'left',
-        38: 'up',
-        39: 'right',
-        40: 'down'
-    };
+//Change player positions
+Player.prototype.handleInput = function(keycode) {
+  //if we have reached sea, reset player positions
+  if (keycode === "up" && this.y === 48) {
+    player.x = player.initialX;
+    player.y = player.initialY;
+  }
 
-    player.handleInput(allowedKeys[e.keyCode]);
+  if (keycode === "left" && this.x > 1) {
+    this.x -= 101;
+  }
+
+  if (keycode === "up" && this.y > 0) {
+    this.y -= 83;
+  }
+
+  if (keycode === "right" && this.x < 400) {
+    this.x += 101;
+  }
+
+  if (keycode === "down" && this.y < 379) {
+    this.y += 83;
+  }
+};
+
+//Helper function for generate enemies random speed
+const generateRandomNum = function(speed) {
+  speed = Math.floor(Math.random(2) * Math.floor(8 - 4) + 4);
+  return speed;
+};
+
+//Init all instances
+let player = new Player(203, 380);
+let enemy1 = new Enemy(0, 48, generateRandomNum());
+let enemy2 = new Enemy(0, 131, generateRandomNum());
+let enemy3 = new Enemy(0, 214, generateRandomNum());
+
+enemy1.update();
+player.update();
+
+const allEnemies = [enemy1, enemy2, enemy3];
+
+document.addEventListener("keyup", function(e) {
+  var allowedKeys = {
+    37: "left",
+    38: "up",
+    39: "right",
+    40: "down"
+  };
+
+  player.handleInput(allowedKeys[e.keyCode]);
 });
